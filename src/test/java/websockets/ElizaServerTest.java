@@ -62,9 +62,10 @@ public class ElizaServerTest {
 	}
 
 	@Test(timeout = 1000)
-        @Ignore
 	public void onChat() throws DeploymentException, IOException, URISyntaxException, InterruptedException {
-		// COMPLETE
+		// 5 messages from server: 3 "connection-start" messages and 2 message in response to the question.
+		// 2 messages in response due to the asnwer and the "---" message
+		CountDownLatch latch = new CountDownLatch(5);
 		List<String> list = new ArrayList<>();
 		ClientEndpointConfig configuration = ClientEndpointConfig.Builder.create().build();
 		ClientManager client = ClientManager.createClient();
@@ -73,22 +74,28 @@ public class ElizaServerTest {
 			@Override
 			public void onOpen(Session session, EndpointConfig config) {
 
-				// COMPLETE
-
+				// We send a message with only a one possible response (See Eliza.java)
+				session.getAsyncRemote().sendText("Sorry, Eliza. It is time to disconnect.");
 				session.addMessageHandler(new MessageHandler.Whole<String>() {
 
 					@Override
 					public void onMessage(String message) {
 						list.add(message);
-						// COMPLETE
+						latch.countDown();
 					}
 				});
 			}
 
 		}, configuration, new URI("ws://localhost:8025/websockets/eliza"));
-		// COMPLETE
-		// COMPLETE
-		// COMPLETE
+		latch.await(); // Wait for the five messages to be received
+		assertEquals(5, list.size()); // Only four messages have to be received
+		// 3 "connection-start" messages
+		assertEquals("The doctor is in.", list.get(0));
+		assertEquals("What's on your mind?", list.get(1));
+		assertEquals("---", list.get(2));
+		// 2 message in response to the question.
+		assertEquals("Please don't apologize.", list.get(3)); // Check answer (See Eliza.java)
+		assertEquals("---", list.get(4)); // Check text after answer
 	}
 
 	@After
