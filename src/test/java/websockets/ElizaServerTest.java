@@ -88,7 +88,7 @@ public class ElizaServerTest {
 
 		}, configuration, new URI("ws://localhost:8025/websockets/eliza"));
 		latch.await(); // Wait for the five messages to be received
-		assertEquals(5, list.size()); // Only four messages have to be received
+		assertEquals(5, list.size()); // Only five messages have to be received
 		// 3 "connection-start" messages
 		assertEquals("The doctor is in.", list.get(0));
 		assertEquals("What's on your mind?", list.get(1));
